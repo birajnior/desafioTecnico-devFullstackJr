@@ -1,0 +1,44 @@
+<h1 class="mb-4">Lista de Produtos</h1>
+
+<div class="row">
+    <% if (produtos.length===0) { %>
+        <p class="text-center">Nenhum produto cadastrado ainda. <a href="/products/new">Cadastrar produto</a></p>
+        <% } else { %>
+            <% produtos.forEach(produto=> { %>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm" style="width: 18rem;">
+                        <div class="card-body d-flex flex-column">
+
+                            <h5 class="card-title">
+                                <%= produto.nome %>
+                            </h5>
+
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                Preço: R$ <%= produto.preco %>
+                            </h6>
+
+                            <p class="card-text flex-grow-1">
+                                <%= produto.descricao %>
+                                    <br>
+                                    <strong>Quantidade:</strong>
+                                    <%= produto.quantidade %>
+                            </p>
+
+                            <div class="mt-auto d-flex justify-content-between">
+                                <a href="/products/<%= produto.id %>/edit" class="btn btn-sm btn-primary">
+                                    Editar
+                                </a>
+
+                                <form action="/products/<%= produto.id %>?_method=DELETE" method="POST"
+                                    onsubmit="return confirm('Deseja realmente excluir este produto?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+                    <% } %>
+</div>
