@@ -6,6 +6,8 @@ const methodOverride = require("method-override");
 const path = require("path");
 const expressLayouts = require("express-ejs-layouts");
 
+// Cria app após imports
+const app = express();
 // --- Livereload ---
 const livereload = require("livereload");
 const connectLivereload = require("connect-livereload");
@@ -20,8 +22,6 @@ liveReloadServer.server.once("connection", () => {
   }, 100);
 });
 
-// Cria app após imports
-const app = express();
 app.use(connectLivereload()); // Middleware precisa do app já criado
 
 // --- Banco ---
@@ -58,10 +58,14 @@ app.use(flash());
 
 // --- Variáveis globais ---
 app.use((req, res, next) => {
-  res.locals.successMsg = req.flash("success_msg");
-  res.locals.errorMsg = req.flash("error_msg");
+  res.locals.successMsg = req.flash("success_msg")[0] || null;
+  res.locals.errorMsg = req.flash("error_msg")[0] || null;
   res.locals.user = req.user || null;
   next();
+});
+
+app.get("/", (req, res) => {
+  res.render("home", { title: "Home" });
 });
 
 // --- Rotas ---

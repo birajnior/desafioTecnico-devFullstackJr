@@ -1,0 +1,86 @@
+body {
+  background-color: #0c3b50;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+.container-login {
+  max-width: 900px;
+  margin: 80px auto;
+  background-color: #111827; /* cinza quase preto */
+  border-radius: 12px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  align-items: center;
+}
+
+.container-login a {
+    color: #9ca3af;
+}
+
+.container-login img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+  margin-left: 40px;
+}
+
+.container-login section {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1f2937;
+  color: #fff;
+}
+
+input::placeholder {
+  color: #9ca3af;
+}
+
+button,
+.btn-success {
+  background-color: #94c63d;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  width: 100%;
+  font-weight: bold;
+  color: #0c3b50;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover,
+.btn-success:hover {
+  background-color: #82b33a;
+}
+
+.container-links {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.container-links a {
+  color: #94c63d;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.container-links a:hover {
+  text-decoration: underline;
+}
