@@ -1,15 +1,28 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const { ensureAuthenticated, ensureSupervisor } = require("../middleware/auth");
+
+router.use(ensureAuthenticated);
 
 // Lista de produtos
 router.get("/", async (req, res) => {
   try {
-    const produtos = await Product.findAll();
+    const produtos = await Product.findAll({
+      include: [
+        {
+          model: require("../models/User"),
+          as: "User", // ou o alias que você definiu no relacionamento
+          attributes: ["nome", "email"], // só nome e email do usuário
+        },
+      ],
+      order: [["createdAt", "DESC"]], // mais recentes primeiro
+    });
 
     res.render("products/list", {
       title: "Lista de Produtos",
-      produtos, // envia para o EJS
+      produtos,
+      user: req.session.user, // ✅ passa usuário logado para a view
     });
   } catch (error) {
     console.error("Erro ao listar produtos:", error);
@@ -17,6 +30,7 @@ router.get("/", async (req, res) => {
       title: "Lista de Produtos",
       produtos: [],
       errorMsg: "Erro ao carregar produtos",
+      user: req.session.user,
     });
   }
 });
@@ -53,6 +67,8 @@ router.post("/", async (req, res) => {
       descricao,
       preco: parseFloat(preco),
       quantidade: parseInt(quantidade),
+      userId: req.session.user.id,
+      dataCriacao: new Date(),
     });
 
     console.log("Produto salvo:", novoProduto.toJSON());
@@ -73,7 +89,7 @@ router.post("/", async (req, res) => {
 
 // --- DELETE /products/:id ---
 // DELETE /products/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", ensureSupervisor, async (req, res) => {
   try {
     const deleted = await Product.destroy({ where: { id: req.params.id } });
 
@@ -125,7 +141,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT /products/:id
-router.put("/:id", async (req, res) => {
+router.put("/:id", ensureSupervisor, async (req, res) => {
   try {
     const { descricao, preco, quantidade } = req.body;
 

@@ -1,37 +1,43 @@
 const express = require("express");
 const session = require("express-session");
-const flash = require("connect-flash");
-const passport = require("passport");
 const methodOverride = require("method-override");
 const path = require("path");
 const expressLayouts = require("express-ejs-layouts");
 
-// Cria app após imports
+// Cria app
 const app = express();
-
-// --- Livereload ---
-// const livereload = require("livereload");
-// const connectLivereload = require("connect-livereload");
-
-// const liveReloadServer = livereload.createServer();
-// liveReloadServer.watch(path.join(__dirname, "views"));
-// liveReloadServer.watch(path.join(__dirname, "public"));
-
-// liveReloadServer.server.once("connection", () => {
-//   setTimeout(() => {
-//     liveReloadServer.refresh("/");
-//   }, 100);
-// });
-
-// app.use(connectLivereload()); // Middleware precisa do app já criado
 
 // --- Banco ---
 const sequelize = require("./config/database");
 const User = require("./models/User");
 const Product = require("./models/Product");
 
+// 🔑 Função para garantir que o Admin existe
+async function ensureAdmin() {
+  try {
+    const admin = await User.findOne({ where: { email: "admin@logsup.com" } });
+    if (!admin) {
+      await User.create({
+        nome: "admin",
+        email: "admin@logsup.com",
+        senha: "admin#123", // ⚠️ simples (plaintext), mas OK pra teste
+        ehAdmin: true,
+        ehSupervisor: false,
+        dataCadastro: new Date(),
+      });
+      console.log("✅ Usuário admin criado: admin@logsup.com / admin#123");
+    } else {
+      console.log("✅ Admin já existe no banco");
+    }
+  } catch (error) {
+    console.error("❌ Erro ao criar admin:", error);
+  }
+}
+
+// Sincronizar BD
 sequelize.sync().then(() => {
-  console.log("Banco sincronizado com sucesso!");
+  console.log("✅ Banco sincronizado com sucesso!");
+  ensureAdmin(); // 🔑 Aqui garantimos a criação do Admin
 });
 
 // --- EJS + Layouts ---
@@ -41,8 +47,8 @@ app.use(expressLayouts);
 app.set("layout", "layouts/main");
 
 // --- Middlewares ---
-app.use(express.json()); // <--- ADICIONADO: parse de JSON (fetch/axios)
-app.use(express.urlencoded({ extended: true })); // parse de formulário tradicional
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(methodOverride("_method"));
 
@@ -51,22 +57,26 @@ app.use(
     secret: "logsUpSecretKey",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hrs
+    },
   })
 );
 
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
-
 // --- Variáveis globais ---
 app.use((req, res, next) => {
-  res.locals.successMsg = req.flash("success_msg")[0] || null;
-  res.locals.errorMsg = req.flash("error_msg")[0] || null;
-  res.locals.user = req.user || null;
+  res.locals.successMsg = null;
+  res.locals.errorMsg = null;
+  res.locals.user = req.session.user || null;
   next();
 });
 
+// --- Rota Home ---
 app.get("/", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/products");
+  }
   res.render("home", { title: "Home" });
 });
 
@@ -75,8 +85,13 @@ app.use("/", require("./routes/auth"));
 app.use("/products", require("./routes/products"));
 app.use("/api", require("./routes/api"));
 
+// --- Erros 404 ---
+app.use((req, res) => {
+  res.status(404).send("Página não encontrada (404)");
+});
+
 // --- Servidor ---
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta http://localhost:${PORT}`);
+  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });

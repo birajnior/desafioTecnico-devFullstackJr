@@ -5,29 +5,43 @@
             <h1>Login</h1>
             <p>Boas-vindas! Faça seu login.</p>
 
-            <div class="form-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" placeholder="Digite seu e-mail" class="form-control" />
-            </div>
-
-            <div class="form-group">
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" name="senha" placeholder="Digite sua senha" class="form-control" />
-            </div>
-
-            <fieldset class="form__opcoes d-flex align-items-center justify-content-between">
-                <div class="form__campo-checkbox d-flex align-items-center">
-                    <input type="checkbox" id="lembrar" />
-                    <label for="lembrar"> Lembrar-me</label>
+            <!-- ✅ Exibir mensagem de erro/sucesso -->
+            <% if (typeof errorMsg !=="undefined" && errorMsg) { %>
+                <div class="alert alert-danger" role="alert">
+                    <%= errorMsg %>
                 </div>
-                <p><a href="#">Esqueci a senha</a></p>
-            </fieldset>
+                <% } %>
 
-            <button type="submit" class="btn btn-success w-100">Login</button>
+                    <% if (typeof successMsg !=="undefined" && successMsg) { %>
+                        <div class="alert alert-success" role="alert">
+                            <%= successMsg %>
+                        </div>
+                        <% } %>
+
+                            <div class="form-group">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email" name="email" placeholder="Digite seu e-mail"
+                                    class="form-control" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="senha">Senha</label>
+                                <input type="password" id="senha" name="senha" placeholder="Digite sua senha"
+                                    class="form-control" required />
+                            </div>
+
+                            <fieldset class="form__opcoes d-flex align-items-center justify-content-between">
+                                <div class="form__campo-checkbox d-flex align-items-center">
+                                    <input type="checkbox" id="lembrar" />
+                                    <label for="lembrar"> Lembrar-me</label>
+                                </div>
+                                <p><a href="#">Esqueci a senha</a></p>
+                            </fieldset>
+
+                            <button type="submit" class="btn btn-success w-100">Login</button>
         </form>
 
         <div class="container-links mt-4 text-center">
-
             <p class="container-links__texto">Ainda não tem conta?</p>
             <a href="/register">Crie seu cadastro!</a>
         </div>
