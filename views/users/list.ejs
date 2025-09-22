@@ -1,41 +1,47 @@
-<h1>Gerenciar Usuários</h1>
+<h1 class="mb-4">Gerenciar Usuários</h1>
 
-<table class="table">
+<table class="table table-dark table-striped align-middle">
     <thead>
         <tr>
             <th>Nome</th>
-            <th>E-mail</th>
-            <th>Supervisor</th>
+            <th>Email</th>
             <th>Admin</th>
-            <th>Ação</th>
+            <th>Supervisor</th>
+            <th>Ações</th>
         </tr>
     </thead>
     <tbody>
-        <% usuarios.forEach(u=> { %>
+        <% usuarios.forEach(usuario=> { %>
             <tr>
                 <td>
-                    <%= u.nome %>
+                    <%= usuario.nome %>
                 </td>
                 <td>
-                    <%= u.email %>
+                    <%= usuario.email %>
                 </td>
                 <td>
-                    <%= u.ehSupervisor ? "Sim" : "Não" %>
+                    <%= usuario.ehAdmin ? "✅ Sim" : "❌ Não" %>
                 </td>
                 <td>
-                    <%= u.ehAdmin ? "Sim" : "Não" %>
+                    <%= usuario.ehSupervisor ? "✅ Sim" : "❌ Não" %>
                 </td>
-                <td>
-                    <form action="/users/<%= u.id %>/role" method="POST" style="display:inline;">
-                        <select name="ehSupervisor">
-                            <option value="false" <%=!u.ehSupervisor ? 'selected' : '' %>>Não</option>
-                            <option value="true" <%=u.ehSupervisor ? 'selected' : '' %>>Sim</option>
-                        </select>
-                        <select name="ehAdmin">
-                            <option value="false" <%=!u.ehAdmin ? 'selected' : '' %>>Não</option>
-                            <option value="true" <%=u.ehAdmin ? 'selected' : '' %>>Sim</option>
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
+                <td class="d-flex gap-2">
+                    <form action="/users/<%= usuario.id %>/role" method="POST" class="d-inline">
+                        <input type="hidden" name="ehAdmin" value="<%= !usuario.ehAdmin %>" />
+                        <input type="hidden" name="ehSupervisor" value="<%= usuario.ehSupervisor %>" />
+                        <button type="submit"
+                            class="btn btn-sm <%= usuario.ehAdmin ? 'btn-outline-danger' : 'btn-success' %>">
+                            <%= usuario.ehAdmin ? "Remover Admin" : "Tornar Admin" %>
+                        </button>
+                    </form>
+
+                    <form action="/users/<%= usuario.id %>/role" method="POST" class="d-inline">
+                        <input type="hidden" name="ehAdmin" value="<%= usuario.ehAdmin %>" />
+                        <input type="hidden" name="ehSupervisor" value="<%= !usuario.ehSupervisor %>" />
+                        <button type="submit"
+                            class="btn btn-sm <%= usuario.ehSupervisor ? 'btn-outline-danger' : 'btn-outline-success' %>">
+                            <%= usuario.ehSupervisor ? "Remover Supervisor" : "Tornar Supervisor" %>
+                        </button>
                     </form>
                 </td>
             </tr>
