@@ -1,0 +1,44 @@
+<h1>Gerenciar Usuários</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Supervisor</th>
+            <th>Admin</th>
+            <th>Ação</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% usuarios.forEach(u=> { %>
+            <tr>
+                <td>
+                    <%= u.nome %>
+                </td>
+                <td>
+                    <%= u.email %>
+                </td>
+                <td>
+                    <%= u.ehSupervisor ? "Sim" : "Não" %>
+                </td>
+                <td>
+                    <%= u.ehAdmin ? "Sim" : "Não" %>
+                </td>
+                <td>
+                    <form action="/users/<%= u.id %>/role" method="POST" style="display:inline;">
+                        <select name="ehSupervisor">
+                            <option value="false" <%=!u.ehSupervisor ? 'selected' : '' %>>Não</option>
+                            <option value="true" <%=u.ehSupervisor ? 'selected' : '' %>>Sim</option>
+                        </select>
+                        <select name="ehAdmin">
+                            <option value="false" <%=!u.ehAdmin ? 'selected' : '' %>>Não</option>
+                            <option value="true" <%=u.ehAdmin ? 'selected' : '' %>>Sim</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
+                    </form>
+                </td>
+            </tr>
+            <% }) %>
+    </tbody>
+</table>

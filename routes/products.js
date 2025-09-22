@@ -42,14 +42,6 @@ router.get("/new", (req, res) => {
   });
 });
 
-// Editar produto
-router.get("/:id/edit", (req, res) => {
-  res.render("products/edit", {
-    title: "Editar Produto",
-    produto: { id: req.params.id },
-  });
-});
-
 router.post("/", async (req, res) => {
   try {
     const { nome, descricao, preco, quantidade } = req.body;
@@ -87,8 +79,18 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Editar produto
+router.get("/:id/edit", ensureAuthenticated, async (req, res) => {
+  if (!(req.session.user.ehAdmin || req.session.user.ehSupervisor)) {
+    return res
+      .status(403)
+      .send("Acesso negado: apenas Admin ou Supervisor podem editar produtos.");
+  }
+  const product = await Product.findByPk(req.params.id);
+  res.render("products/edit", { product });
+});
+
 // --- DELETE /products/:id ---
-// DELETE /products/:id
 router.delete("/:id", ensureSupervisor, async (req, res) => {
   try {
     const deleted = await Product.destroy({ where: { id: req.params.id } });
@@ -112,7 +114,6 @@ router.delete("/:id", ensureSupervisor, async (req, res) => {
     });
   }
 });
-
 // GET /products/:id → retorna JSON de 1 produto
 router.get("/:id", async (req, res) => {
   try {

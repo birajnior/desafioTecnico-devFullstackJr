@@ -1,18 +1,55 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const { ensureAuthenticated } = require("../middleware/auth");
 
-// POST register
+// GET /register -> exibe formulário de cadastro
+router.get("/register", (req, res) => {
+  res.render("auth/register", { 
+    title: "Cadastro",
+    errorMsg: null,
+    successMsg: null
+  });
+});
+
+// POST /register
 router.post("/register", async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, confirmSenha } = req.body;
   try {
-    const exist = await User.findOne({ where: { email } });
-    if (exist) return res.status(400).json({ msg: "Email já cadastrado" });
+    if (senha !== confirmSenha) {
+      return res.render("auth/register", {
+        title: "Cadastro",
+        errorMsg: "As senhas não conferem!",
+      });
+    }
 
-    const user = await User.create({ nome, email, senha });
-    res.json({ msg: "Usuário cadastrado com sucesso!", user });
+    const exist = await User.findOne({ where: { email } });
+    if (exist) {
+      return res.render("auth/register", {
+        title: "Cadastro",
+        errorMsg: "Este e-mail já está cadastrado!",
+      });
+    }
+
+    await User.create({ 
+      nome, 
+      email, 
+      senha,
+      ehAdmin: false,
+      ehSupervisor: false,
+      dataCadastro: new Date()
+    });
+
+    return res.render("home", {
+      title: "Login",
+      successMsg: "Usuário cadastrado com sucesso! Faça seu login.",
+    });
   } catch (err) {
-    res.status(500).json({ msg: "Erro no cadastro" });
+    console.error("Erro ao registrar:", err);
+    res.render("auth/register", {
+      title: "Cadastro",
+      errorMsg: "Erro interno ao cadastrar.",
+    });
   }
 });
 
@@ -70,4 +107,32 @@ router.get("/logout", (req, res) => {
   });
 });
 
-module.exports = router; // ✅ exportando o router
+// Rota para listar usuários (apenas Admin)
+router.get("/users", ensureAuthenticated, async (req, res) => {
+  if (!req.session.user.ehAdmin) {
+    return res.status(403).send("Acesso negado!");
+  }
+
+  const usuarios = await User.findAll();
+  res.render("users/list", { title: "Gerenciar Usuários", usuarios });
+});
+
+// Atualizar role de um usuário
+router.post("/users/:id/role", ensureAuthenticated, async (req, res) => {
+  if (!req.session.user.ehAdmin) {
+    return res.status(403).send("Acesso negado!");
+  }
+
+  const { ehSupervisor, ehAdmin } = req.body;
+  const usuario = await User.findByPk(req.params.id);
+
+  if (!usuario) return res.status(404).send("Usuário não encontrado");
+
+  usuario.ehSupervisor = ehSupervisor === "true";
+  usuario.ehAdmin = ehAdmin === "true";
+  await usuario.save();
+
+  res.redirect("/users"); // volta pra lista de usuários
+});
+
+module.exports = router;

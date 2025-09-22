@@ -1,8 +1,9 @@
 <h1 class="mb-4">Cadastro</h1>
+
 <form action="/register" method="POST" class="w-50 mx-auto">
     <div class="mb-3">
-        <label for="name" class="form-label">Nome</label>
-        <input type="text" name="name" id="name" class="form-control" required>
+        <label for="nome" class="form-label">Nome</label>
+        <input type="text" name="nome" id="nome" class="form-control" required>
     </div>
 
     <div class="mb-3">
@@ -11,14 +12,18 @@
     </div>
 
     <div class="mb-3">
-        <label for="password" class="form-label">Senha</label>
-        <input type="password" name="password" id="password" class="form-control" required>
+        <label for="senha" class="form-label">Senha</label>
+        <input type="password" name="senha" id="senha" class="form-control" required>
     </div>
 
     <div class="mb-3">
-        <label for="confirmPassword" class="form-label">Confirmar Senha</label>
-        <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" required>
+        <label for="confirmSenha" class="form-label">Confirmar Senha</label>
+        <input type="password" name="confirmSenha" id="confirmSenha" class="form-control" required>
     </div>
 
     <button type="submit" class="btn btn-success w-100">Registrar</button>
 </form>
+
+<div class="mt-3 text-center">
+    <p>Já possui conta? <a href="/">Faça login</a></p>
+</div>
