@@ -8,21 +8,22 @@ const expressLayouts = require("express-ejs-layouts");
 
 // Cria app após imports
 const app = express();
+
 // --- Livereload ---
-const livereload = require("livereload");
-const connectLivereload = require("connect-livereload");
+// const livereload = require("livereload");
+// const connectLivereload = require("connect-livereload");
 
-const liveReloadServer = livereload.createServer();
-liveReloadServer.watch(path.join(__dirname, "views"));
-liveReloadServer.watch(path.join(__dirname, "public"));
+// const liveReloadServer = livereload.createServer();
+// liveReloadServer.watch(path.join(__dirname, "views"));
+// liveReloadServer.watch(path.join(__dirname, "public"));
 
-liveReloadServer.server.once("connection", () => {
-  setTimeout(() => {
-    liveReloadServer.refresh("/");
-  }, 100);
-});
+// liveReloadServer.server.once("connection", () => {
+//   setTimeout(() => {
+//     liveReloadServer.refresh("/");
+//   }, 100);
+// });
 
-app.use(connectLivereload()); // Middleware precisa do app já criado
+// app.use(connectLivereload()); // Middleware precisa do app já criado
 
 // --- Banco ---
 const sequelize = require("./config/database");
@@ -40,7 +41,8 @@ app.use(expressLayouts);
 app.set("layout", "layouts/main");
 
 // --- Middlewares ---
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // <--- ADICIONADO: parse de JSON (fetch/axios)
+app.use(express.urlencoded({ extended: true })); // parse de formulário tradicional
 app.use(express.static(path.join(__dirname, "public")));
 app.use(methodOverride("_method"));
 

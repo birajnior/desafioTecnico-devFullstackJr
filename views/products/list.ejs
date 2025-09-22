@@ -1,18 +1,18 @@
 <div class="dashboard-container">
     <h1 class="mb-4">Lista de Produtos</h1>
 
-    <div class="mb-3">
-        <form action="/products/search" method="GET" class="d-flex">
+    <div class="mb-3 d-flex">
+        <form class="d-flex flex-grow-1 me-2">
             <input type="text" name="q" class="form-control me-2" placeholder="Buscar produto por nome">
             <button type="submit" class="btn btn-success">Buscar</button>
         </form>
+
+        <a href="/products/new" class="btn btn-primary ms-2">Cadastrar Produto</a>
     </div>
 
     <div class="row">
         <% if (produtos.length===0) { %>
-            <p class="text-center">Nenhum produto cadastrado ainda.
-                <a href="/products/new" class="btn btn-outline-success btn-sm ms-2">Cadastrar produto</a>
-            </p>
+            <p class="text-center">Nenhum produto cadastrado ainda.</p>
             <% } else { %>
                 <% produtos.forEach(produto=> { %>
                     <div class="col-md-4 mb-4">
@@ -23,8 +23,8 @@
                                     <%= produto.nome %>
                                 </h5>
 
-                                <h6 class="card-subtitle mb-2 text-muted">
-                                    Preço: R$ <%= produto.preco %>
+                                <h6 class="card-text mb-2">
+                                    Preço: R$ <%= produto.preco ? produto.preco.toFixed(2) : "0.00" %>
                                 </h6>
 
                                 <p class="card-text flex-grow-1">
@@ -33,19 +33,13 @@
                                         <%= produto.quantidade %>
                                 </p>
 
-                                <% if (user && user.role==="Supervisor" ) { %>
-                                    <div class="mt-auto d-flex justify-content-between">
-                                        <a href="/products/<%= produto.id %>/edit" class="btn btn-sm btn-edit">
-                                            Editar
-                                        </a>
-                                        <form action="/products/<%= produto.id %>?_method=DELETE" method="POST"
-                                            onsubmit="return confirm('Deseja realmente excluir este produto?')">
-                                            <button type="submit" class="btn btn-sm btn-delete">
-                                                Excluir
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <% } %>
+                                <div class="mt-auto d-flex justify-content-between">
+                                    <button class="btn btn-sm btn-primary"
+                                        onclick="editProduct('<%= produto.id %>')">Editar</button>
+                                    <button class="btn btn-sm btn-danger"
+                                        onclick="deleteProduct('<%= produto.id %>')">Excluir</button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -53,3 +47,8 @@
                         <% } %>
     </div>
 </div>
+
+<script>
+    const produtosList = JSON.parse('<%- JSON.stringify(produtos) %>');
+</script>
+<script src="/js/scriptList.js"></script>
