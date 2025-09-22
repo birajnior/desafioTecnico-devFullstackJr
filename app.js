@@ -10,7 +10,6 @@ const sequelize = require("./config/database");
 const User = require("./models/User");
 const Product = require("./models/Product");
 
-// Garantir que Admin padrão exista
 async function ensureAdmin() {
   try {
     const admin = await User.findOne({ where: { email: "admin@logsup.com" } });
@@ -66,7 +65,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Home agora é a lista de produtos
 app.get("/", async (req, res) => {
   if (!req.session.user) {
     return res.render("products/list", {
@@ -82,8 +80,6 @@ app.get("/", async (req, res) => {
     title: "Produtos",
   });
 });
-
-// Rotas
 app.use("/", require("./routes/auth"));
 app.use("/products", require("./routes/products"));
 app.use("/api", require("./routes/api"));

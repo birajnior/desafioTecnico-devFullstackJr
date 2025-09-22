@@ -10,7 +10,6 @@ const Product = sequelize.define("Product", {
   dataCriacao: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 });
 
-// 🔑 Aqui definimos o alias "usuario"
 Product.belongsTo(User, { foreignKey: "userId", as: "usuario" });
 User.hasMany(Product, { foreignKey: "userId", as: "produtos" });
 

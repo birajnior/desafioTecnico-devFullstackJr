@@ -8,7 +8,7 @@ body {
 .container-login {
   max-width: 900px;
   margin: 80px auto;
-  background-color: #111827; /* cinza quase preto */
+  background-color: #111827; 
   border-radius: 12px;
   display: flex;
   overflow: hidden;

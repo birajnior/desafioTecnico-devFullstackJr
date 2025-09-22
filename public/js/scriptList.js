@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const formSearch = document.querySelector("form.d-flex");
   const cardsContainer = document.querySelector(".row");
 
-  // intercepta busca
   formSearch.addEventListener("submit", (e) => {
     e.preventDefault();
     const termo = inputSearch.value.toLowerCase();
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCards(filtrados);
   });
 
-  // renderiza cards dinamicamente
   function renderCards(lista) {
     cardsContainer.innerHTML = "";
 
@@ -54,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 👇 aqui entram as funções globais (porque vão ser chamadas pelo onclick dos botões)
 async function deleteProduct(id) {
   if (!confirm(`Deseja realmente excluir o produto ${id}?`)) return;
 

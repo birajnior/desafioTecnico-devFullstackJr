@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // pega o ID do produto pela URL
   const id = window.location.pathname.split("/")[2]; // /products/123/edit → "123"
 
-  // busca dados do produto
   try {
     const res = await fetch(`/products/${id}`);
     const data = await res.json();
@@ -10,7 +8,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (data.success) {
       const produto = data.produto;
 
-      // preencher os campos
       document.getElementById("nome").value = produto.nome;
       document.getElementById("descricao").value = produto.descricao;
       document.getElementById("preco").value = produto.preco;
@@ -23,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("Erro ao carregar informações.");
   }
 
-  // intercepta o submit para salvar alterações
   const form = document.getElementById("form-edit");
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -45,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (result.success) {
         alert(result.message);
-        window.location.href = "/products"; // volta pra lista
+        window.location.href = "/products";
       } else {
         alert("Erro: " + result.message);
       }
@@ -55,6 +51,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
-
-
-

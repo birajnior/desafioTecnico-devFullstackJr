@@ -36,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Função para excluir
 async function deleteProduct(id) {
   console.log("entrou aqui", id);
 
@@ -53,7 +52,7 @@ async function deleteProduct(id) {
     const result = await response.json();
     if (result.success) {
       alert(result.message);
-      window.location.reload(); // atualiza a lista sem precisar navegar manualmente
+      window.location.reload(); 
     } else {
       alert("Erro: " + result.message);
     }
@@ -63,7 +62,6 @@ async function deleteProduct(id) {
   }
 }
 
-// Função para editar
 async function editProduct(id) {
   console.log(id);
 
