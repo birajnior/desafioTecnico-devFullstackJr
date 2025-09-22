@@ -1,28 +1,36 @@
 const express = require("express");
 const router = express.Router();
+const { Op } = require("sequelize");
 const Product = require("../models/Product");
+const User = require("../models/User");
 const { ensureAuthenticated, ensureSupervisor } = require("../middleware/auth");
 
 router.use(ensureAuthenticated);
 
-// Lista de produtos
 router.get("/", async (req, res) => {
   try {
+    const search = req.query.search || "";
     const produtos = await Product.findAll({
       include: [
         {
-          model: require("../models/User"),
-          as: "User", // ou o alias que você definiu no relacionamento
-          attributes: ["nome", "email"], // só nome e email do usuário
+          model: User,
+          as: "usuario",
+          attributes: ["nome", "email"],
         },
       ],
-      order: [["createdAt", "DESC"]], // mais recentes primeiro
+      where: search
+        ? {
+            nome: { [Op.like]: `%${search}%` },
+          }
+        : {},
+      order: [["createdAt", "DESC"]],
     });
 
     res.render("products/list", {
       title: "Lista de Produtos",
       produtos,
-      user: req.session.user, // ✅ passa usuário logado para a view
+      user: req.session.user,
+      search,
     });
   } catch (error) {
     console.error("Erro ao listar produtos:", error);
@@ -35,7 +43,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Novo produto
 router.get("/new", (req, res) => {
   res.render("products/new", {
     title: "Cadastrar Produto",
@@ -44,7 +51,8 @@ router.get("/new", (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { nome, descricao, preco, quantidade } = req.body;
+    let { nome, descricao, quantidade } = req.body;
+    let preco = req.body.preco.toString().trim();
 
     if (!nome || !preco) {
       return res.status(400).json({
@@ -53,17 +61,42 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Criar no banco
+    const produtoExistente = await Product.findOne({ where: { nome } });
+    if (produtoExistente) {
+      return res.status(400).json({
+        success: false,
+        message: "Produto já existe!",
+      });
+    }
+
+    if (preco.includes(",")) {
+      preco = preco.replace(/\./g, "");
+      preco = preco.replace(",", ".");
+    } else {
+      const parts = preco.split(".");
+      if (parts.length > 2) {
+        const decimal = parts.pop();
+        preco = parts.join("") + "." + decimal;
+      }
+    }
+
+    preco = parseFloat(preco);
+
+    if (isNaN(preco)) {
+      return res.status(400).json({
+        success: false,
+        message: "Preço inválido!",
+      });
+    }
+
     const novoProduto = await Product.create({
       nome,
       descricao,
-      preco: parseFloat(preco),
-      quantidade: parseInt(quantidade),
+      preco,
+      quantidade: parseInt(quantidade) || 0,
       userId: req.session.user.id,
       dataCriacao: new Date(),
     });
-
-    console.log("Produto salvo:", novoProduto.toJSON());
 
     return res.status(201).json({
       success: true,
@@ -79,8 +112,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Editar produto
-router.get("/:id/edit", ensureAuthenticated, async (req, res) => {
+router.get("/:id/edit", async (req, res) => {
   if (!(req.session.user.ehAdmin || req.session.user.ehSupervisor)) {
     return res
       .status(403)
@@ -90,36 +122,36 @@ router.get("/:id/edit", ensureAuthenticated, async (req, res) => {
   res.render("products/edit", { product });
 });
 
-// --- DELETE /products/:id ---
 router.delete("/:id", ensureSupervisor, async (req, res) => {
   try {
     const deleted = await Product.destroy({ where: { id: req.params.id } });
 
     if (!deleted) {
-      return res.status(404).json({
-        success: false,
-        message: "Produto não encontrado",
+      return res.status(404).render("products/list", {
+        title: "Lista de Produtos",
+        produtos: [],
+        errorMsg: "Produto não encontrado",
+        user: req.session.user,
       });
     }
 
-    return res.json({
-      success: true,
-      message: "Produto excluído com sucesso!",
-    });
+    res.redirect("/products"); // 🔑 volta para lista
   } catch (error) {
     console.error("Erro ao excluir produto:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Erro interno ao excluir produto",
+    return res.status(500).render("products/list", {
+      title: "Lista de Produtos",
+      produtos: [],
+      errorMsg: "Erro interno ao excluir produto",
+      user: req.session.user,
     });
   }
 });
-// GET /products/:id → retorna JSON de 1 produto
+
 router.get("/:id", async (req, res) => {
   try {
-    console.log(req.params);
-
-    const produto = await Product.findByPk(req.params.id);
+    const produto = await Product.findByPk(req.params.id, {
+      include: { model: User, as: "usuario", attributes: ["nome", "email"] },
+    });
 
     if (!produto) {
       return res.status(404).json({
@@ -141,10 +173,9 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// PUT /products/:id
 router.put("/:id", ensureSupervisor, async (req, res) => {
   try {
-    const { descricao, preco, quantidade } = req.body;
+    let { descricao, preco, quantidade } = req.body;
 
     const produto = await Product.findByPk(req.params.id);
     if (!produto) {
@@ -154,9 +185,19 @@ router.put("/:id", ensureSupervisor, async (req, res) => {
       });
     }
 
+    preco = preco.replace(/\./g, "").replace(",", ".");
+    preco = parseFloat(preco);
+
+    if (isNaN(preco)) {
+      return res.status(400).json({
+        success: false,
+        message: "Preço inválido!",
+      });
+    }
+
     produto.descricao = descricao;
     produto.preco = preco;
-    produto.quantidade = quantidade;
+    produto.quantidade = parseInt(quantidade) || 0;
 
     await produto.save();
 
@@ -173,4 +214,5 @@ router.put("/:id", ensureSupervisor, async (req, res) => {
     });
   }
 });
+
 module.exports = router;

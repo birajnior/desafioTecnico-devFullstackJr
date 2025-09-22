@@ -4,15 +4,13 @@ const methodOverride = require("method-override");
 const path = require("path");
 const expressLayouts = require("express-ejs-layouts");
 
-// Cria app
 const app = express();
 
-// --- Banco ---
 const sequelize = require("./config/database");
 const User = require("./models/User");
 const Product = require("./models/Product");
 
-// 🔑 Função para garantir que o Admin existe
+// Garantir que Admin padrão exista
 async function ensureAdmin() {
   try {
     const admin = await User.findOne({ where: { email: "admin@logsup.com" } });
@@ -20,7 +18,7 @@ async function ensureAdmin() {
       await User.create({
         nome: "admin",
         email: "admin@logsup.com",
-        senha: "admin#123", // ⚠️ simples (plaintext), mas OK pra teste
+        senha: "admin#123",
         ehAdmin: true,
         ehSupervisor: false,
         dataCadastro: new Date(),
@@ -34,19 +32,16 @@ async function ensureAdmin() {
   }
 }
 
-// Sincronizar BD
 sequelize.sync().then(() => {
   console.log("✅ Banco sincronizado com sucesso!");
-  ensureAdmin(); // 🔑 Aqui garantimos a criação do Admin
+  ensureAdmin();
 });
 
-// --- EJS + Layouts ---
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.set("layout", "layouts/main");
 
-// --- Middlewares ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -59,12 +54,11 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: false,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hrs
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
 
-// --- Variáveis globais ---
 app.use((req, res, next) => {
   res.locals.successMsg = null;
   res.locals.errorMsg = null;
@@ -72,25 +66,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Rota Home ---
-app.get("/", (req, res) => {
-  if (req.session.user) {
-    return res.redirect("/products");
+// Home agora é a lista de produtos
+app.get("/", async (req, res) => {
+  if (!req.session.user) {
+    return res.render("products/list", {
+      produtos: [],
+      user: null,
+      title: "Produtos",
+    });
   }
-  res.render("home", { title: "Home" });
+  const produtos = await Product.findAll();
+  return res.render("products/list", {
+    produtos,
+    user: req.session.user,
+    title: "Produtos",
+  });
 });
 
-// --- Rotas ---
+// Rotas
 app.use("/", require("./routes/auth"));
 app.use("/products", require("./routes/products"));
 app.use("/api", require("./routes/api"));
 
-// --- Erros 404 ---
 app.use((req, res) => {
   res.status(404).send("Página não encontrada (404)");
 });
 
-// --- Servidor ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);

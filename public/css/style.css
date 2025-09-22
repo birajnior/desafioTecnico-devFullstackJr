@@ -17,7 +17,7 @@ body {
 }
 
 .container-login a {
-    color: #9ca3af;
+  color: #9ca3af;
 }
 
 .container-login img {
@@ -53,20 +53,35 @@ input::placeholder {
   color: #9ca3af;
 }
 
-button,
-.btn-success {
+.btn-buscar {
+  margin-right:20px;
   background-color: #94c63d;
   border: none;
   border-radius: 6px;
   padding: 12px;
-  width: 100%;
+  width: 150px;
   font-weight: bold;
   color: #0c3b50;
   cursor: pointer;
   transition: 0.3s;
 }
 
-button:hover,
+.btn-buscar:hover {
+  background-color: #82b33a;
+}
+
+.btn-success {
+  background-color: #94c63d;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  width: 200px;
+  font-weight: bold;
+  color: #0c3b50;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
 .btn-success:hover {
   background-color: #82b33a;
 }
